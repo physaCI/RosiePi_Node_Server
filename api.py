@@ -21,12 +21,16 @@
 # THE SOFTWARE.
 #
 
-from flask import jsonify, request
+import os
+import subprocess
+import time
 
+from flask import jsonify, request
 from flask.views import MethodView
 
 from werkzeug.exceptions import abort
 
+from node_server import redis_queue
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -46,22 +50,48 @@ class InvalidUsage(Exception):
 class NodeStatus(MethodView):
 
     def get(self):
-        #TODO: fold-in busy status response
+        node_name = os.environ['USER']
+
+        job_count = redis_queue.RosieJobQueue()
         status = {
-            'node_name': 'node_1',
-            'busy': False
+            'node_name': node_name,
+            'busy': 0 < job_count.jobs.count,
+            'job_count': job_count.jobs.count
         }
         return jsonify(status)
+
+
+def rq_dummy(**kwargs):
+    """ dummy func for rq job queue dev
+    """
+
+    time.sleep(30)
+    print(kwargs)
 
 class RunTest(MethodView):
 
     def post(self):
         if not request.is_json:
-            raise InvalidUsage('Endpoint requires valid json payload',
+            raise InvalidUsage('Endpoint requires valid json payload.',
                                status_code=406)
 
         payload = request.get_json()
         if 'commit_sha' not in payload:
-            abort(400)
+            raise InvalidUsage('No commit sha found in payload.',
+                               status_code=400)
         else:
-            return jsonify({'result': 'success'})
+            job = redis_queue.RosieJobQueue()
+            run_args = (
+                'python3',
+                '-m',
+                'rosieapp.run_rosiepi'
+            )
+            run_kwargs = {
+                'stdout': subprocess.PIPE,
+                'stderr': subprocess.PIPE,
+            }
+            result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
+            if result.get_status() != 'failed':
+                return ("OK", 200)
+            else:
+                return (str(result.exc_info), 500)
