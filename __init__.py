@@ -22,15 +22,14 @@
 #
 
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from . import api
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY='dev',
-        #DATABASE=os.path.join(app.instance_path, 'server.sqlite')
+        SECRET_KEY='dev'
     )
 
     if test_config is None:
@@ -42,6 +41,16 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    @app.before_request
+    def check_http_sig():
+        auth_sig = request.headers.get('Authorization', None)
+        if not auth_sig:
+            response = jsonify(request.headers.to_list())
+            response.status_code = 401
+            return response
+        else:
+            pass
 
     @app.errorhandler(api.InvalidUsage)
     def handle_invalid_usage(error):
