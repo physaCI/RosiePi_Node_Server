@@ -22,6 +22,7 @@
 #
 
 import os
+from socket import gethostname
 import subprocess
 import time
 
@@ -50,7 +51,7 @@ class InvalidUsage(Exception):
 class NodeStatus(MethodView):
 
     def get(self):
-        node_name = os.environ['USER']
+        node_name = gethostname()
 
         job_count = redis_queue.RosieJobQueue()
         status = {
