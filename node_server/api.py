@@ -80,12 +80,17 @@ class RunTest(MethodView):
         if 'commit_sha' not in payload:
             raise InvalidUsage('No commit sha found in payload.',
                                status_code=400)
+        elif 'check_run_id' not in payload:
+            raise InvalidUsage('No check run ID found in payload.',
+                               status_code=400)
         else:
             job = redis_queue.RosieJobQueue()
             run_args = (
                 'python3',
                 '-m',
-                'rosieapp.run_rosiepi'
+                'rosieapp.run_rosiepi',
+                payload['commit_sha'],
+                payload['check_run_id'],
             )
             run_kwargs = {
                 'stdout': subprocess.PIPE,
