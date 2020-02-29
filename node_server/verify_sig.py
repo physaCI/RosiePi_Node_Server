@@ -109,8 +109,11 @@ class VerifySig(PhysaCIConfig):
             return False
 
         # verify desired algorithm
-        if sig_elements.get('algorithm') != 'hmac-256':
-            logger.warning('Signature uses incorrect algorithm.')
+        if sig_elements.get('algorithm') != 'hmac-sha256':
+            logger.warning(
+                'Signature uses incorrect algorithm. '
+                f'Supplied algorithm: {sig_elements.get("algorithm")}'
+            )
             return False
 
         # verfiy signature hash
