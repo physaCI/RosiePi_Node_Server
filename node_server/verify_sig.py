@@ -122,7 +122,7 @@ class VerifySig(PhysaCIConfig):
                       f'host: {request.headers.get("Host", "")}\n'
                       f'date: {request.headers.get("Date", "")}')
         local_sig_hashed = hmac.new(
-            self.config.node_sig_key.encode(),
+            self.node_sig_key.encode(),
             msg=sig_string.encode(),
             digestmod=sha256
         )
