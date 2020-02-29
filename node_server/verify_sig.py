@@ -101,7 +101,11 @@ class VerifySig(PhysaCIConfig):
 
         # verify desired node's hostname
         if sig_elements.get('keyID') != gethostname():
-            logger.waring('Signature missing keyID.')
+            logger.warning(
+                'Signature has missing or incorrect keyID. '
+                f'Supplied keyID: {sig_elements.get("keyID")}, '
+                f'Local hostname: {gethostname()}'
+            )
             return False
 
         # verify desired algorithm
