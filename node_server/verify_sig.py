@@ -23,15 +23,20 @@
 
 import hmac
 import json
+import logging
 import pathlib
 import re
 
 from base64 import b64decode
 from configparser import ConfigParser
+from flask.logging import default_handler
 from hashlib import sha256
 from socket import gethostname
 
 _STATIC_CONFIG_FILE = pathlib.Path('/etc/opt/physaci_sub/conf.ini')
+
+logger = logging.getLogger()
+logger.addHandler(default_handler)
 
 class PhysaCIConfig():
     """ Container class for holding local configuration results.
@@ -89,16 +94,19 @@ class VerifySig(PhysaCIConfig):
 
         request_sig = request.headers.get('Authorization', '')
         if not request_sig.startswith('Signature'):
+            logger.warning('Authorization header not an HTTP Signature.')
             return False
 
         sig_elements = self.__parse_sig_elements(request_sig[10:].split(','))
 
         # verify desired node's hostname
         if sig_elements.get('keyID') != gethostname():
+            logger.waring('Signature missing keyID.')
             return False
 
         # verify desired algorithm
         if sig_elements.get('algorithm') != 'hmac-256':
+            logger.warning('Signature uses incorrect algorithm.')
             return False
 
         # verfiy signature hash
@@ -118,6 +126,7 @@ class VerifySig(PhysaCIConfig):
         )
 
         if not compare:
+            logger.warning('Failed to validate. Signatures do not match.')
             return False
 
         return True
