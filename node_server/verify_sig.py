@@ -133,7 +133,7 @@ class VerifySig(PhysaCIConfig):
         )
 
         compare = hmac.compare_digest(
-            local_sig_hashed,
+            local_sig_hashed.digest(),
             b64decode(sig_elements['signature'])
         )
 
