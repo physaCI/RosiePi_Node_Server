@@ -139,6 +139,12 @@ class VerifySig(PhysaCIConfig):
 
         if not compare:
             logger.warning('Failed to validate. Signatures do not match.')
+            logger.warning(
+                f'auth header: {request_sig}, '
+                f'local sig: {local_sig_hashed.digest()}'
+                f'sig_elements: {sig_elements}, '
+                f'sig_string: {sig_string}, '
+            )
             return False
 
         return True
