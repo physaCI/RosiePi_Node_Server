@@ -30,6 +30,7 @@ import re
 from base64 import b64decode
 from configparser import ConfigParser
 from flask.logging import default_handler
+from getpass import getuser
 from hashlib import sha256
 from socket import gethostname
 
@@ -45,6 +46,10 @@ class PhysaCIConfig():
         self.config = ConfigParser(allow_no_value=True, default_section='local')
         read_config = self.config.read(_STATIC_CONFIG_FILE)
         if not read_config:
+            logging.warning(
+                'Failed to read physaCI subscription info. '
+                f'User: {getuser()}'
+            )
             return
 
         self.config_location = self.config.get('local', 'config_file',
