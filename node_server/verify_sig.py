@@ -84,6 +84,10 @@ class VerifySig(PhysaCIConfig):
             if element_re:
                 key = element_re.group(1)
                 value = element_re.group(2)
+
+                if key == 'signature':
+                    value = b64decode(value)
+
                 sig_elements[key] = value
 
         return sig_elements
@@ -123,7 +127,7 @@ class VerifySig(PhysaCIConfig):
 
         # verfiy signature hash
         request_target = f'{request.method.lower()} {request.path}'
-        sig_string = (f'(request-target) {request_target}\n'
+        sig_string = (f'(request-target): {request_target}\n'
                       f'host: {request.headers.get("Host", "")}\n'
                       f'date: {request.headers.get("Date", "")}')
         local_sig_hashed = hmac.new(
@@ -135,14 +139,14 @@ class VerifySig(PhysaCIConfig):
         try:
             compare = hmac.compare_digest(
                 local_sig_hashed.digest(),
-                b64decode(sig_elements['signature'])
+                sig_elements['signature']
             )
         except Exception:
             logger.warning(
-                f'auth header: {request_sig}, '
-                f'local sig: {local_sig_hashed.digest()}'
-                f'sig_elements: {sig_elements}, '
-                f'sig_string: {sig_string}, '
+                f'auth header: {request_sig}\n'
+                f'local sig: {local_sig_hashed.digest()}\n'
+                f'sig_elements: {sig_elements}\n'
+                f'sig_string: {sig_string}\n'
             )
             raise
 
