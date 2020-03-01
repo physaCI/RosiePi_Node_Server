@@ -27,7 +27,7 @@ import logging
 import pathlib
 import re
 
-from base64 import b64decode
+from base64 import b64encode, b64decode
 from configparser import ConfigParser
 from flask.logging import default_handler
 from getpass import getuser
@@ -136,9 +136,11 @@ class VerifySig(PhysaCIConfig):
             digestmod=sha256
         )
 
+        local_encoded_sig = b64encode(local_sig_hashed.digest())
+
         try:
             compare = hmac.compare_digest(
-                local_sig_hashed.digest(),
+                b64decode(local_encoded_sig),
                 sig_elements['signature']
             )
         except Exception:
