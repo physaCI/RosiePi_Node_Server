@@ -45,7 +45,7 @@ def create_app(test_config=None):
     @app.before_request
     def check_http_sig():
         verified = verify_sig.VerifySig()
-        if not verified.config:
+        if not verified.config.sections() or not verified.node_sig_key:
             raise api.InvalidUsage('Authorization could not be verified',
                                    status_code=500)
 
