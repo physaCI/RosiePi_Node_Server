@@ -132,10 +132,19 @@ class VerifySig(PhysaCIConfig):
             digestmod=sha256
         )
 
-        compare = hmac.compare_digest(
-            local_sig_hashed.digest(),
-            b64decode(sig_elements['signature'])
-        )
+        try:
+            compare = hmac.compare_digest(
+                local_sig_hashed.digest(),
+                b64decode(sig_elements['signature'])
+            )
+        except Exception:
+            logger.warning(
+                f'auth header: {request_sig}, '
+                f'local sig: {local_sig_hashed.digest()}'
+                f'sig_elements: {sig_elements}, '
+                f'sig_string: {sig_string}, '
+            )
+            raise
 
         if not compare:
             logger.warning('Failed to validate. Signatures do not match.')
