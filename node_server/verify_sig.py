@@ -86,7 +86,8 @@ class VerifySig(PhysaCIConfig):
                 value = element_re.group(2)
 
                 if key == 'signature':
-                    value = b64decode(value)
+                    # strip leading 'b' and single quotes
+                    value = b64decode(value[2:-1])
 
                 sig_elements[key] = value
 
