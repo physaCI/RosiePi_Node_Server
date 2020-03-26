@@ -50,7 +50,8 @@ class InvalidUsage(Exception):
 
 class NodeStatus(MethodView):
 
-    def get(self):
+    @staticmethod
+    def _node_status():
         node_name = gethostname()
 
         job_count = redis_queue.RosieJobQueue()
@@ -59,7 +60,11 @@ class NodeStatus(MethodView):
             'busy': 0 < job_count.jobs.count,
             'job_count': job_count.jobs.count
         }
-        return jsonify(status)
+
+        return status
+
+    def get(self):
+        return jsonify(_node_status())
 
 
 def rq_dummy(**kwargs):
@@ -98,6 +103,6 @@ class RunTest(MethodView):
             }
             result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
             if result.get_status() != 'failed':
-                return ("OK", 200)
+                return jsonify(NodeStatus._node_status())
             else:
                 return (str(result.exc_info), 500)
