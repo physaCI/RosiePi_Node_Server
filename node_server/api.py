@@ -88,7 +88,7 @@ class RunTest(MethodView):
             run_args = (
                 'python3',
                 '-m',
-                'rosieapp.run_rosiepi',
+                'run_rosie',
                 payload['commit_sha'],
                 payload['check_run_id'],
             )
