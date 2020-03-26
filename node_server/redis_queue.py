@@ -56,5 +56,5 @@ class RosieJobQueue():
 
             :returns: int job-id
         """
-        print(args)
+
         return self.rq_queue.enqueue(function, args=(*args,), kwargs=kwargs)
