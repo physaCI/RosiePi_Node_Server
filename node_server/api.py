@@ -64,7 +64,7 @@ class NodeStatus(MethodView):
         return status
 
     def get(self):
-        return jsonify(NodeStats._node_status())
+        return jsonify(NodeStatus._node_status())
 
 
 def rq_dummy(**kwargs):
