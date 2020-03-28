@@ -91,8 +91,6 @@ class RunTest(MethodView):
         else:
             job = redis_queue.RosieJobQueue()
             run_args = (
-                'python3',
-                '-m',
                 'run_rosie',
                 payload['commit_sha'],
                 payload['check_run_id'],
