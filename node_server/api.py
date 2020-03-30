@@ -22,6 +22,7 @@
 #
 
 import os
+import pwd
 from socket import gethostname
 import subprocess
 import time
@@ -90,14 +91,20 @@ class RunTest(MethodView):
                                status_code=400)
         else:
             job = redis_queue.RosieJobQueue()
+            user_dir = pwd.getpwnam('rosie-backend')[5]
             run_args = (
-                'run_rosie',
+                f'{user_dir}/.local/bin/run_rosie',
                 payload['commit_sha'],
                 payload['check_run_id'],
             )
             run_kwargs = {
+                'shell': True,
                 'stdout': subprocess.PIPE,
                 'stderr': subprocess.PIPE,
+                'cwd': user_dir,
+                'env': {
+                    'PYTHONUSERBASE': f'{user_dir}/.local'
+                },
             }
             result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
             if result.get_status() != 'failed':
