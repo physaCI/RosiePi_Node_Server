@@ -101,6 +101,7 @@ class RunTest(MethodView):
                 'shell': True,
                 'stdout': subprocess.PIPE,
                 'stderr': subprocess.PIPE,
+                'check': True,
                 'cwd': user_dir,
                 'env': {
                     'PYTHONUSERBASE': f'{user_dir}/.local'
