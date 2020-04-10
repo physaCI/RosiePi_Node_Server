@@ -99,6 +99,8 @@ class RunTest(MethodView):
             )
             run_kwargs = {
                 'shell': True,
+                'executable': '/bin/bash',
+                'start_new_session': True,
                 'stdout': subprocess.PIPE,
                 'stderr': subprocess.PIPE,
                 #'check': True,
