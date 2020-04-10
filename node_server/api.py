@@ -104,7 +104,8 @@ class RunTest(MethodView):
                 #'check': True,
                 'cwd': user_dir,
                 'env': {
-                    'PYTHONUSERBASE': f'{user_dir}/.local'
+                    'PYTHONUSERBASE': f'{user_dir}/.local',
+                    'PYTHONUSERSITE': f'{user_dir}/.local/lib/python3.7/site-packages',
                 },
             }
             result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
