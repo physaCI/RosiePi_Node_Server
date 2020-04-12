@@ -96,9 +96,11 @@ class RunTest(MethodView):
             user_dir = pwd.getpwnam('rosie-backend')[5]
 
             run_args = ' '.join(
-                f'{user_dir}/rosie_pi/rosie_venv/bin/run_rosie',
-                shlex.quote(payload['commit_sha']),
-                shlex.quote(payload['check_run_id']),
+                (
+                    f'{user_dir}/rosie_pi/rosie_venv/bin/run_rosie',
+                    shlex.quote(payload['commit_sha']),
+                    shlex.quote(payload['check_run_id']),
+                )
             )
 
             run_kwargs = {
