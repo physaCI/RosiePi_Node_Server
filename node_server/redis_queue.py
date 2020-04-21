@@ -47,7 +47,7 @@ class RosieJobQueue():
         """
         return self.rq_queue.started_job_registry
 
-    def new_job(self, function, *args, kwargs=None):
+    def new_job(self, function, func_args=None, func_kwargs=None):
         """ Enqueue a new job to the queue.
 
             :params: function: The function to add to the queue.
@@ -57,4 +57,11 @@ class RosieJobQueue():
             :returns: int job-id
         """
 
-        return self.rq_queue.enqueue(function, args=(*args,), kwargs=kwargs)
+        job = rq.Job.create(
+            function,
+            timeout="1h",
+            args=func_args,
+            kwargs=func_kwargs,
+        )
+
+        return self.rq_queue.enqueue_job(job)
