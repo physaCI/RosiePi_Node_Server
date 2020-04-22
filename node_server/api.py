@@ -111,7 +111,11 @@ class RunTest(MethodView):
                 'cwd': user_dir,
             }
 
-            result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
+            result = job.new_job(
+                subprocess.run,
+                func_args=run_args,
+                func_kwargs=run_kwargs
+            )
 
             if result.get_status() != 'failed':
                 return jsonify(NodeStatus._node_status())
