@@ -57,7 +57,7 @@ class RosieJobQueue():
             :returns: int job-id
         """
 
-        job = rq.job.Job.create(
+        job = self.rq_queue.create_job(
             function,
             timeout="1h",
             args=func_args,
