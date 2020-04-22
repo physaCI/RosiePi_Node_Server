@@ -113,7 +113,7 @@ class RunTest(MethodView):
 
             result = job.new_job(
                 subprocess.run,
-                func_args=run_args,
+                func_args=(run_args,),
                 func_kwargs=run_kwargs
             )
 
