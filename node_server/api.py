@@ -22,6 +22,8 @@
 #
 
 import os
+import pwd
+import shlex
 from socket import gethostname
 import subprocess
 import time
@@ -50,7 +52,8 @@ class InvalidUsage(Exception):
 
 class NodeStatus(MethodView):
 
-    def get(self):
+    @staticmethod
+    def _node_status():
         node_name = gethostname()
 
         job_count = redis_queue.RosieJobQueue()
@@ -59,7 +62,11 @@ class NodeStatus(MethodView):
             'busy': 0 < job_count.jobs.count,
             'job_count': job_count.jobs.count
         }
-        return jsonify(status)
+
+        return status
+
+    def get(self):
+        return jsonify(NodeStatus._node_status())
 
 
 def rq_dummy(**kwargs):
@@ -80,19 +87,37 @@ class RunTest(MethodView):
         if 'commit_sha' not in payload:
             raise InvalidUsage('No commit sha found in payload.',
                                status_code=400)
+        elif 'check_run_id' not in payload:
+            raise InvalidUsage('No check run ID found in payload.',
+                               status_code=400)
         else:
             job = redis_queue.RosieJobQueue()
-            run_args = (
-                'python3',
-                '-m',
-                'rosieapp.run_rosiepi'
+
+            user_dir = pwd.getpwnam('rosie-backend')[5]
+
+            run_args = ' '.join(
+                (
+                    f'{user_dir}/rosie_pi/rosie_venv/bin/run_rosie',
+                    shlex.quote(payload['commit_sha']),
+                    shlex.quote(payload['check_run_id']),
+                )
             )
+
             run_kwargs = {
+                'shell': True,
                 'stdout': subprocess.PIPE,
                 'stderr': subprocess.PIPE,
+                #'check': True,
+                'cwd': user_dir,
             }
-            result = job.new_job(subprocess.run, run_args, kwargs=run_kwargs)
+
+            result = job.new_job(
+                subprocess.run,
+                func_args=(run_args,),
+                func_kwargs=run_kwargs
+            )
+
             if result.get_status() != 'failed':
-                return ("OK", 200)
+                return jsonify(NodeStatus._node_status())
             else:
                 return (str(result.exc_info), 500)

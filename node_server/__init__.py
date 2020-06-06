@@ -24,7 +24,7 @@
 import os
 from flask import Flask, jsonify, request
 
-from . import api
+from . import api, verify_sig
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -44,23 +44,20 @@ def create_app(test_config=None):
 
     @app.before_request
     def check_http_sig():
-        auth_sig = request.headers.get('Authorization', None)
-        if not auth_sig:
-            response = jsonify(request.headers.to_list())
-            response.status_code = 401
-            return response
-        else:
-            pass
+        verified = verify_sig.VerifySig()
+        if not verified.config.sections() or not verified.node_sig_key:
+            raise api.InvalidUsage('Authorization could not be verified',
+                                   status_code=500)
+
+        if not verified.verify_signature(request):
+            raise api.InvalidUsage('Authorization failed.',
+                                   status_code=401)
 
     @app.errorhandler(api.InvalidUsage)
     def handle_invalid_usage(error):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code
         return response
-
-    @app.route('/hello')
-    def hello():
-        return 'Hello, world'
 
     app.add_url_rule('/status', view_func=api.NodeStatus.as_view('status'))
     app.add_url_rule('/run-test', view_func=api.RunTest.as_view('run-test'))
